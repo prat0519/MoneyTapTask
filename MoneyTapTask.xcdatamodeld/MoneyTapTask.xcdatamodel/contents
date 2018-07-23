@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14135" systemVersion="17F77" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="PagesDB" representedClassName="PagesDB" syncable="YES" codeGenerationType="class">
+        <attribute name="pageId" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="pageAndTermRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TermsDB" inverseName="pageAndTermRelation" inverseEntity="TermsDB" syncable="YES"/>
+        <relationship name="pageAndThumbnaiRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ThumbnailDB" inverseName="pageAndThumbnaiRelation" inverseEntity="ThumbnailDB" syncable="YES"/>
+        <relationship name="pageQueryRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="QueryDB" syncable="YES"/>
+    </entity>
+    <entity name="QueryDB" representedClassName="QueryDB" syncable="YES" codeGenerationType="class">
+        <relationship name="pageQueryRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PagesDB" syncable="YES"/>
+        <relationship name="resultQueryRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ResultDB" syncable="YES"/>
+    </entity>
+    <entity name="ResultDB" representedClassName="ResultDB" syncable="YES" codeGenerationType="class">
+        <attribute name="batchcomplete" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <relationship name="resultQueryRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="QueryDB" syncable="YES"/>
+    </entity>
+    <entity name="TermsDB" representedClassName="TermsDB" syncable="YES" codeGenerationType="class">
+        <attribute name="wikiDescription" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="pageAndTermRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PagesDB" inverseName="pageAndTermRelation" inverseEntity="PagesDB" syncable="YES"/>
+    </entity>
+    <entity name="ThumbnailDB" representedClassName="ThumbnailDB" syncable="YES" codeGenerationType="class">
+        <attribute name="source" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="pageAndThumbnaiRelation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PagesDB" inverseName="pageAndThumbnaiRelation" inverseEntity="PagesDB" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="PagesDB" positionX="-63" positionY="-18" width="128" height="120"/>
+        <element name="QueryDB" positionX="-54" positionY="-9" width="128" height="75"/>
+        <element name="TermsDB" positionX="-36" positionY="9" width="128" height="75"/>
+        <element name="ResultDB" positionX="-18" positionY="27" width="128" height="75"/>
+        <element name="ThumbnailDB" positionX="0" positionY="45" width="128" height="75"/>
+    </elements>
+</model>
