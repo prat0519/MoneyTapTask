@@ -1,6 +1,5 @@
 //
 //  HUDRenderer.swift
-//  ContactsApp
 //
 //  Created by Prashant Pandey on 23/07/18.
 //  Copyright © 2018 Prashant Pandey. All rights reserved.
