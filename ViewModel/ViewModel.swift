@@ -7,8 +7,9 @@
 //
 
 import Foundation
+import UIKit
 
-class ViewModel {
+class ViewModel  {
     
     private let apiManager = SearchApiManager()
     private var batchcomplete: Bool!
@@ -17,10 +18,39 @@ class ViewModel {
     var pages: DataRouter<[Pages]?> = DataRouter(nil)
     var apiFailed: DataRouter<String?> = DataRouter(nil)
     
+    //locally calling for search text
+    func fetchLocalSearch(text searchText: String) -> Int {
+        
+        self.pages.value = nil
+        SearchResultDB.shared().getResults(text: searchText) { (resultModel, errorMessage) in
+            guard let result = resultModel else {
+                self.pages.value = nil
+                self.apiFailed.value = "YES"
+                return
+            }
+            self.batchcomplete = result.batchcomplete
+            guard let query = result.query else {
+                self.pages.value = nil
+                self.apiFailed.value = "YES"
+                return
+            }
+
+            guard let pages = query.pages else {
+                self.pages.value = nil
+                self.apiFailed.value = "YES"
+                return
+            }
+            self.apiFailed.value = "NO"
+            self.pages.value = pages
+        }
+        return numberOfRows()
+    }
+    
     //api calling for the search text
     func fetchSearch(text searchText: String) {
-        self.pages.value = nil
-                
+        
+        //self.pages.value = nil
+        
         apiManager.fetchSearch(text: searchText) { (resultModel, errorMessage) in
             guard let result = resultModel else {
                 self.pages.value = nil
@@ -44,9 +74,8 @@ class ViewModel {
             self.pages.value = pages
             // Save result model in CoreData.
             // Need handle data for handling offline case.
-            
-            
             SearchResultDB.shared().saveResults(result,searchText)
+            
         }
     }
     

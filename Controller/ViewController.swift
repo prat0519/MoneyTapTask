@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, HUDRenderer {
 
     @IBOutlet weak var searchResultTableView: UITableView!
     var viewModel = ViewModel()
@@ -29,12 +29,14 @@ class ViewController: UIViewController {
                         self.isApiFailed = false
                         self.navigationItem.title = "NO RESULT"
                     }
+                    self.hideActivityIndicator()
                     self.searchResultTableView.reloadData()
                 }
                 return
             }
             DispatchQueue.main.async {
                 self.isApiFailed = false
+                self.hideActivityIndicator()
                 self.searchResultTableView.reloadData()
             }
         }
@@ -42,12 +44,14 @@ class ViewController: UIViewController {
         viewModel.apiFailed.bind { [unowned self] (status) in
             guard let status = status else {
                 DispatchQueue.main.async {
+                    self.hideActivityIndicator()
                     self.navigationItem.title = "SEARCH"
                 }
                 return
             }
             if status == "YES" {
                 DispatchQueue.main.async {
+                    self.hideActivityIndicator()
                     self.navigationItem.title = "NO RESULT"
                 }
             }
@@ -69,8 +73,7 @@ class ViewController: UIViewController {
 
 extension ViewController: UITableViewDelegate {
     
-    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat
-    {
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableViewAutomaticDimension
     }
     
@@ -117,7 +120,11 @@ extension ViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         if let searchText =  searchBar.text, searchText.count != 0{
-           
+            let count = viewModel.fetchLocalSearch(text: searchText)
+            
+            if count == 0 {
+                self.showActivityIndicator()
+            }
             viewModel.fetchSearch(text: searchText)
             setupNavigationUI()
             self.navigationItem.title = searchText.uppercased()

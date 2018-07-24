@@ -12,6 +12,7 @@ struct SearchApiManager {
     
     //call api request to server and get data of search category
     func fetchSearch(text searchText: String, completionBlock block: @escaping(_ resultModel: ResultModel?, _ error: String?)-> Void) {
+        
         let path = UrlExtension.queryPath + searchText
         NetworkCall.shared.apiRequest(path, requestType: .get) { (data, error) in
             if error == nil {

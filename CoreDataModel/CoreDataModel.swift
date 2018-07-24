@@ -74,6 +74,8 @@ class SearchResultDB {
 
 extension SearchResultDB {
     
+    
+    //Save to core data
     func saveResults(_ resultModel: ResultModel, _ searchText:String) {
         
         //Fetch Core Data
@@ -95,6 +97,9 @@ extension SearchResultDB {
                     let queryDbObjc = QueryDB(context: managedObjectContext)
                     
                     if let pages = query.pages {
+                        
+                        let mutablePagesSet = NSMutableSet()
+                        
                         for page in pages {
                             let pagesDBObjc = PagesDB(context: managedObjectContext)
                             
@@ -132,11 +137,11 @@ extension SearchResultDB {
                                 }
                             }
                             
-                            let page = queryDbObjc.value(forKey: "pageQueryRelation")
-                            
-                            queryDbObjc.setValue(page, forKey: "pageQueryRelation")
-                            saveDataInManagedObjectContextUsing { (isSaved) in}
+                            //let page = queryDbObjc.mutableSetValue(forKey: "pageQueryRelation")
+                            mutablePagesSet.add(pagesDBObjc)
                         }
+                        queryDbObjc.setValue(mutablePagesSet, forKey: "pageQueryRelation")
+                        saveDataInManagedObjectContextUsing { (isSaved) in}
                     }
                     resultDBObjc.setValue(queryDbObjc, forKey: "resultQueryRelation")
                     saveDataInManagedObjectContextUsing { (isSaved) in}
@@ -151,9 +156,62 @@ extension SearchResultDB {
         catch {
             print("error executing fetch request: \(error)")
         }
-
+    }
+    
+    //Fetch Core Data
+    func getResults(text searchText: String, completionBlock block: @escaping(_ resultModel: ResultModel?, _ error: String?)-> Void) {
         
-       
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "ResultDB")
+        var results: [NSManagedObject] = []
+        
+        var returnResultModel : ResultModel
+        do {
+            results = try managedObjectContext.fetch(fetchRequest)
+            
+            for result in results {
+                
+                var shouldReturn : Bool = false
+                
+                if let batchcomplete = result.value(forKey: "batchcomplete") {
+                    
+                    let queryDB = result.value(forKey: "resultQueryRelation") as? QueryDB
+                    let pagesDB = queryDB?.value(forKey: "pageQueryRelation") as? Set<PagesDB>
+                    
+                    var pagesModel = [Pages]()
+                    var pageModel : Pages
+                    
+                    if (pagesDB?.first?.title?.contains(searchText))! {
+                        shouldReturn = true
+                    } else {
+                        continue
+                    }
+                    
+                    for page in pagesDB! {
+                        let termDB = page.value(forKey: "pageAndTermRelation") as? TermsDB
+                        
+                        var wikiDesc = [String]()
+                        wikiDesc.append(termDB?.wikiDescription ?? "Software Developer")
+                        let termModel = Terms.init(description: wikiDesc)
+                        
+                        let thumbnailDB = page.value(forKey: "pageAndThumbnaiRelation") as? ThumbnailDB
+                        let thumbnailModel = Thumbnail.init(source: thumbnailDB?.source ?? "profile_icon")
+
+                        pageModel = Pages.init(pageid: Int(page.pageId), title: page.title, terms: termModel, thumbnail: thumbnailModel)
+                        pagesModel.append(pageModel)
+                    }
+                    returnResultModel = ResultModel.init(batchcomplete:batchcomplete as? Bool, query: QueryResult.init(pages: pagesModel))
+                    
+                    if(shouldReturn == true) {
+                        block(returnResultModel, nil)
+                        return
+                    }
+                }
+            }
+        }
+        catch {
+            print("error executing fetch request: \(error)")
+            block(nil, "No Data")
+        }
     }
 }
 
